@@ -7,7 +7,6 @@ const NumPad = props => {
   const [toBeCalculatedValue, setToBeCalculatedValue] = useState("");
   const [answer, setAnswer] = useState("");
   const [scientificMode, setScientificMode] = useState(false);
-  const [angleMode, setAngleMode] = useState("DEG");
 
   const inputHandler = number => {
     let newInput = enteredValue + number;
@@ -17,34 +16,40 @@ const NumPad = props => {
       .replace(/%/g, "/100")
       .replace(/e/g, "Math.E")
       .replace(/π/g, "Math.PI")
+      .replace(/abs\(/g, "Math.abs(")
       .replace(/sin\(/g, "Math.sin(")
       .replace(/cos\(/g, "Math.cos(")
       .replace(/tan\(/g, "Math.tan(")
       .replace(/log\(/g, "Math.log10(")
-      .replace(/ln\(/g, "Math.log(")
-      .replace(/sin⁻¹\(/g, "Math.asin(")
-      .replace(/cos⁻¹\(/g, "Math.acos(")
-      .replace(/tan⁻¹\(/g, "Math.atan(");
-    console.log(newInput, "newly created!");
-    console.log(enteredValue, "EnteredValue");
-    console.log(replace, "ReplacedValue");
+      .replace(/ln\(/g, "Math.log(");
+
+    // console.log(newInput, "newly created!");
+    // console.log(enteredValue, "EnteredValue");
+    // console.log(replace, "ReplacedValue");
 
     setToBeCalculatedValue(replace);
+
     setEnteredValue(newInput);
+    // setEnteredValue(replace);
   };
 
   const evaluate = () => {
     console.log(toBeCalculatedValue, "To be evaluated!");
-    if (eval(toBeCalculatedValue) === Infinity) {
-      Alert.alert("Cannot be divided by 0");
-    } else {
-      let x = eval(toBeCalculatedValue);
-      setAnswer(x);
+    try {
+      let result = eval(toBeCalculatedValue);
+      if (result === Infinity) {
+        Alert.alert("Cannot be divided by 0");
+      } else {
+        setAnswer(result);
+      }
+    } catch (e) {
+      Alert.alert("Invalid Input");
     }
   };
 
   const reset = () => {
     setEnteredValue("");
+    setToBeCalculatedValue("");
     setAnswer("");
   };
 
@@ -62,15 +67,49 @@ const NumPad = props => {
     setScientificMode(false);
   };
 
+  const sqrtHandler = sign => {
+    let newInput = `${toBeCalculatedValue}${sign}`;
+    let replace = newInput.replace(/√/g, "Math.sqrt(");
+    console.log(newInput, "newInput");
+    console.log(replace, "replaced");
+
+    setEnteredValue(replace);
+    setToBeCalculatedValue(replace);
+  };
+
+  const factorialHandler = sign => {
+    // let newInput = `${toBeCalculatedValue}${sign}`;
+    let x = toBeCalculatedValue.slice(0, toBeCalculatedValue.indexOf("+")); //all the start part till +
+    let y = toBeCalculatedValue.slice(toBeCalculatedValue.indexOf("+")); //till the end
+
+    let z = parseInt(y);
+
+    console.log(z, "Factorial of!");
+    console.log(toBeCalculatedValue, "To be evaluated,before!");
+    if (z === 0) return 1;
+    let f = 1;
+    for (let i = 1; i < z; i++) {
+      f = f * (i + 1);
+    }
+
+    // let replace = newInput.replace(/!/g, f);
+    evaluate();
+    console.log(toBeCalculatedValue.replace("y", f), "y");
+
+    setEnteredValue(toBeCalculatedValue.replace("y", f));
+    setToBeCalculatedValue(f);
+    console.log(toBeCalculatedValue, "To be evaluated,after!");
+    console.log(f, "Evaluated,after!");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.screenWrapper}>
         <View>
           <Text style={styles.title}>Calculator</Text>
         </View>
-        <View style={styles.emptyArea}>
-          <Text style={styles.angleModeDisplay}>{angleMode}</Text>
-        </View>
+        <View style={styles.emptyArea}></View>
+
         <View style={styles.display}>
           <Text
             style={styles.enteredValueDisplay}
@@ -104,9 +143,6 @@ const NumPad = props => {
           <Text style={styles.btnScn} onPress={() => inputHandler("log(")}>
             log
           </Text>
-          <Text style={styles.btnScn} onPress={() => inputHandler("ln(")}>
-            ln
-          </Text>
         </View>
         <View
           style={[
@@ -114,21 +150,18 @@ const NumPad = props => {
             scientificMode ? "" : styles.displayNormal
           ]}
         >
+          <Text style={styles.btnScn} onPress={() => inputHandler("ln(")}>
+            ln
+          </Text>
+          <Text style={styles.btnScn} onPress={() => inputHandler("abs(")}>
+            abs
+          </Text>
           <Text style={styles.btnScn} onPress={() => inputHandler("(")}>
             (
           </Text>
           <Text style={styles.btnScn} onPress={() => inputHandler(")")}>
             )
           </Text>
-          <Text style={styles.btnScn} onPress={() => inputHandler("^")}>
-            ^
-          </Text>
-          <Text style={styles.btnScn} onPress={() => inputHandler("√")}>
-            √
-          </Text>
-          <Text style={styles.btnScn} onPress={() => inputHandler("!")}>
-            !
-          </Text>
         </View>
         <View
           style={[
@@ -136,20 +169,17 @@ const NumPad = props => {
             scientificMode ? "" : styles.displayNormal
           ]}
         >
+          <Text style={styles.btnScn} onPress={() => sqrtHandler("√")}>
+            √
+          </Text>
+          <Text style={styles.btnScn} onPress={() => factorialHandler("!")}>
+            !
+          </Text>
           <Text style={styles.btnScn} onPress={() => inputHandler("π")}>
             π
           </Text>
           <Text style={styles.btnScn} onPress={() => inputHandler("e")}>
             e
-          </Text>
-          <Text style={styles.btnScn} onPress={() => inputHandler("abs")}>
-            abs
-          </Text>
-          <Text style={styles.btnScn} onPress={() => inputHandler("rad")}>
-            RAD
-          </Text>
-          <Text style={styles.btnScn} onPress={() => inputHandler("deg")}>
-            DEG
           </Text>
         </View>
 
@@ -342,7 +372,7 @@ const styles = StyleSheet.create({
   btnScn: {
     textAlign: "center",
     color: "white",
-    width: "20%",
+    width: "25%",
     fontSize: 25
   }
 });
